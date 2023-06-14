@@ -1,13 +1,30 @@
 # frozen_string_literal: true
+require "bundler"
+Bundler.require(:test)
 
 require "test_helper"
+require "ml/service/isolation/outlier"
 
-class Ml::Service::Isolation::TestNovelty < Minitest::Test
+require 'ml/forest'
+
+class Ml::Service::Isolation::TestOutlier < Minitest::Test
   def test_that_it_has_a_version_number
     refute_nil ::Ml::Service::Isolation::VERSION
   end
 
-  def test_it_does_something_useful
-    assert true
+  def test_anomaly_score
+    input = [[1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [2, 2]]
+
+    forest = Ml::Forest::Tree.new(input, trees_count: 4, forest_helper: Ml::Service::Isolation::Outlier.new)
+
+    anomaly = forest.evaluate_forest([2, 2])
+    a_depths = anomaly.map(&:depth)
+
+    regular = forest.evaluate_forest([1, 1])
+    r_depths = regular.map(&:depth)
+
+    assert_operator Evaluatable.evaluate_anomaly_score_s(a_depths, input.size), :>, 0.6
+    assert_operator Evaluatable.evaluate_anomaly_score_s(r_depths, input.size), :<, 0.5
   end
+
 end

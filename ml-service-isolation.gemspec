@@ -3,7 +3,7 @@
 require_relative "lib/ml/service/isolation/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "ml-service-novelty"
+  spec.name = "ml-service-isolation"
   spec.version = Ml::Service::Isolation::VERSION
   spec.authors = ["Adam Ulrich"]
   spec.email = ["a_ulrich@utb.cz"]
