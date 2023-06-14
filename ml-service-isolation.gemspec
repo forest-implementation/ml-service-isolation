@@ -5,18 +5,18 @@ require_relative "lib/ml/service/isolation/version"
 Gem::Specification.new do |spec|
   spec.name = "ml-service-isolation"
   spec.version = Ml::Service::Isolation::VERSION
-  spec.authors = ["Adam Ulrich"]
-  spec.email = ["a_ulrich@utb.cz"]
+  spec.authors = ["Adam Ulrich", "Jan Krňávek"]
+  spec.email = %w[a_ulrich@utb.cz krnavek@utb.cz]
 
-  spec.summary = "Service enabling Novelty anomaly detection for ml_forest."
-  # spec.description = "TODO: Write a longer description or delete this line."
-  # spec.homepage = "TODO: Put your gem's website or public repo URL here."
-  # spec.required_ruby_version = ">= 2.6.0"
+  spec.summary = "Service enabling Novelty and Outlier anomaly detection for ml_forest."
+  spec.description = "Set of services that work on ml-forest ruby gem (https://github.com/forest-implementation/ml-forest) as a part of forest-implementation project. It contains outlier service for outlier detection and novelty service for novelty detection (to detect whether new observation is novelty or not)."
+  spec.homepage = "https://github.com/forest-implementation/ml-service-isolation."
+  spec.required_ruby_version = ">= 2.6.0"
   #
   # spec.metadata["allowed_push_host"] = "TODO: Set to your gem server 'https://example.com'"
   #
-  # spec.metadata["homepage_uri"] = spec.homepage
-  # spec.metadata["source_code_uri"] = "TODO: Put your gem's public repo URL here."
+  spec.metadata["homepage_uri"] = spec.homepage
+  spec.metadata["source_code_uri"] = "https://github.com/forest-implementation/ml-service-isolation"
   # spec.metadata["changelog_uri"] = "TODO: Put your gem's CHANGELOG.md URL here."
 
   # Specify which files should be added to the gem when it is released.
