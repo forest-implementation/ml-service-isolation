@@ -43,7 +43,7 @@ module Ml
 
         def split_ranges(ranges, dimension, split_point)
           new_rangers = ranges.clone
-          new_rangers[dimension] = ranges[dimension].min...split_point
+          new_rangers[dimension] = ranges[dimension].min..split_point
 
           new_rangers2 = ranges.clone
           new_rangers2[dimension] = split_point..ranges[dimension].max
