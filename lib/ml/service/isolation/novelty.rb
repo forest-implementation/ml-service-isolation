@@ -14,7 +14,7 @@ module Ml
 
         attr_reader :batch_size, :max_depth, :random, :range
 
-        def initialize(batch_size: 128, max_depth: Math.log(batch_size, 2), random: Random.new, range: (0..1))
+        def initialize(batch_size: 128, max_depth: Math.log(batch_size, 2), random: Random.new, range: (0.0..1))
           @batch_size = batch_size
           @max_depth = max_depth
           @random = random
