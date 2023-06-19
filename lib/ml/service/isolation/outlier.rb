@@ -12,6 +12,8 @@ module Ml
         SplitPointD = Data.define(:split_point, :dimension)
         DataPoint = Data.define(:depth, :data)
 
+        attr_reader :batch_size, :max_depth, :random
+
         def initialize(batch_size: 128, max_depth: Math.log(batch_size, 2), random: Random.new)
           @batch_size = batch_size
           @max_depth = max_depth
