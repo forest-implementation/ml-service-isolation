@@ -18,7 +18,35 @@ If bundler is not being used to manage dependencies, install the gem by executin
 
 ## Usage
 
-TODO: Write usage instructions here
+### Novelty
+
+For example of usage please refer to example project.
+
+Simple usage on ml-forest could look like this
+
+1. install ml-forest alongside with this service
+
+Gemfile
+```Ruby
+gem "ml-forest"
+gem "ml-service-isolation"
+```
+
+Usage
+```ruby
+# learning input
+input = [[5], [8], [3], [4], [2], [7]]
+forest = Ml::Forest::Tree.new(input, trees_count: 5, forest_helper: Ml::Service::Isolation::Novelty.new)
+
+# evaluate forest depths for one point
+depths_first = forest.evaluate_forest([5]).map(&:depth)
+Evaluatable.evaluate_anomaly_score_s(depths_first, input.size) # 0.23 (<0.5 => not a novelty)
+
+
+depths_second = forest.evaluate_forest([3000]).map(&:depth)
+Evaluatable.evaluate_anomaly_score_s(depths_second, input.size) # 0.81 (>0.5 => definitely novel)
+
+```
 
 ## Development
 
