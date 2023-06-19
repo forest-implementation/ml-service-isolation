@@ -12,16 +12,17 @@ module Ml
         SplitPointD = Data.define(:split_point, :dimension)
         DataPoint = Data.define(:depth, :data, :ranges)
 
-        attr_reader :batch_size, :max_depth, :random
+        attr_reader :batch_size, :max_depth, :random, :range
 
-        def initialize(batch_size: 128, max_depth: Math.log(batch_size, 2), random: Random.new)
+        def initialize(batch_size: 128, max_depth: Math.log(batch_size, 2), random: Random.new, range: (0..1))
           @batch_size = batch_size
           @max_depth = max_depth
           @random = random
+          @range = range
         end
 
         def get_sample(data, _ = 0)
-          ranges = (1..data[0].length).map { |_| (0..3000) }
+          ranges = (1..data[0].length).map { |_| @range }
           DataPoint.new(depth: 0, data: data.sample(@batch_size, random: @random), ranges: ranges)
         end
 
