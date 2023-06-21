@@ -68,7 +68,7 @@ module Ml
         end
 
         def evaluate_score(evaluated_data)
-          depths = evaluated_data.map { |x| x.depth - 2 + Evaluatable.evaluate_path_length_c(x.data.size) }
+          depths = evaluated_data.map { |x| x.depth - 3 + Evaluatable.evaluate_path_length_c(x.data.size) }
           score = Evaluatable.evaluate_anomaly_score_s(depths, @batch_size)
           Score.new(score, score >= 0.6, Evaluatable.evaluate_average_e(depths))
         end
