@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
 require_relative "version"
+require_relative "evaluatable"
 
 module Ml
   module Service
     module Isolation
       class Novelty
+        include Evaluatable
 
         SplitPointD = Data.define(:split_point, :dimension)
         DataPoint = Data.define(:depth, :data, :ranges)

@@ -1,14 +1,17 @@
 # frozen_string_literal: true
 
 require_relative "version"
+require_relative "evaluatable"
 
 module Ml
   module Service
     module Isolation
       class Outlier
+        include Evaluatable
 
         SplitPointD = Data.define(:split_point, :dimension)
         DataPoint = Data.define(:depth, :data)
+        Score = Data.define(:score, :outlier?)
 
         attr_reader :batch_size, :max_depth, :random
 
@@ -46,6 +49,12 @@ module Ml
 
         def end_condition(data_point)
           data_point.depth == @max_depth || data_point.data.length <= 1
+        end
+
+        def evaluate_score(evaluated_data)
+          p depths = evaluated_data.map {|x| x.depth + Evaluatable.evaluate_path_length_c(x.data.size)}
+          paper_scores = Evaluatable.evaluate_anomaly_score_s(depths, service.batch_size)
+          paper_scores.map {|score| score >= 0.6 ? Score.new(score, false) : Score.new(score, true)}
         end
       end
     end
