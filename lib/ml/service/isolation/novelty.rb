@@ -11,7 +11,7 @@ module Ml
 
         SplitPointD = Data.define(:split_point, :dimension)
         DataPoint = Data.define(:depth, :data, :ranges)
-        Score = Data.define(:score, :novelty?)
+        Score = Data.define(:score, :novelty?, :depths)
 
         attr_reader :batch_size, :max_depth, :random, :range
 
@@ -70,7 +70,7 @@ module Ml
         def evaluate_score(evaluated_data)
           depths = evaluated_data.map { |x| x.depth + Evaluatable.evaluate_path_length_c(x.data.size) }
           score = Evaluatable.evaluate_anomaly_score_s(depths, @batch_size)
-          Score.new(score, score >= 0.6)
+          Score.new(score, score >= 0.6, depths)
         end
 
       end
