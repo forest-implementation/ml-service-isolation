@@ -22,13 +22,13 @@ class Ml::Service::Isolation::TestNovelty < Minitest::Test
     split_point = Ml::Service::Isolation::Novelty::SplitPointD.new(100, 1)
     groups = ns.group(datapoint, split_point)
 
-    assert_equal groups[true].ranges, [0..3000, 0...100]
-    assert_equal groups[false].ranges, [0..3000, 100..3000]
+    assert_equal groups[true].ranges, [0.0..3000, 0.0..100]
+    assert_equal groups[false].ranges, [0.0..3000, 100..3000]
 
     split_point2 = Ml::Service::Isolation::Novelty::SplitPointD.new(200, 0)
     groups2 = ns.group(groups[true], split_point2)
-    assert_equal groups2[true].ranges, [0...200, 0...100]
-    assert_equal groups2[false].ranges, [200..3000, 0...100]
+    assert_equal groups2[true].ranges, [0..200, 0.0..100]
+    assert_equal groups2[false].ranges, [200..3000, 0..100]
   end
 
   def test_novelty_run
