@@ -65,6 +65,13 @@ module Ml
         def end_condition(data_point)
           data_point.depth == @max_depth || data_point.data.length <= 1
         end
+
+        def evaluate_score(evaluated_data)
+          depths = evaluated_data.map { |x| x.depth + Evaluatable.evaluate_path_length_c(x.data.size) }
+          score = Evaluatable.evaluate_anomaly_score_s(depths, @batch_size)
+          Score.new(score, score >= 0.6)
+        end
+
       end
     end
   end
