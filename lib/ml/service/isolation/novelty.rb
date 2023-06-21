@@ -11,6 +11,7 @@ module Ml
 
         SplitPointD = Data.define(:split_point, :dimension)
         DataPoint = Data.define(:depth, :data, :ranges)
+        Score = Data.define(:score, :novelty?)
 
         attr_reader :batch_size, :max_depth, :random, :range
 
