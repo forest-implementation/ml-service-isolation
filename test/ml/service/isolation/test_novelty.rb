@@ -73,4 +73,14 @@ class Ml::Service::Isolation::TestNovelty < Minitest::Test
     assert_equal 5, sd.split_point
   end
 
+  def test_split_point_decimal
+    ns = Ml::Service::Isolation::Novelty.new(batch_size: 128, random: Random.new(2), ranges: [(0.0..5),(1.0..5)])
+
+    dp = ns.get_sample([[1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [2, 2]])
+
+    sd = ns.split_point(dp)
+    # 5 (ranges.size) / 2 = 2.5
+    assert_equal 2.5, sd.split_point
+  end
+
 end
