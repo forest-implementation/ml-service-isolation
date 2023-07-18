@@ -13,25 +13,25 @@ module Ml
         DataPoint = Data.define(:depth, :data, :ranges)
         Score = Data.define(:score, :novelty?, :depths)
 
-        attr_reader :batch_size, :max_depth, :random, :range
+        attr_reader :batch_size, :max_depth, :random, :ranges
 
-        def initialize(batch_size: 128, max_depth: Math.log(batch_size, 2), random: Random.new, range: (0.0..1))
+        def initialize(batch_size: 128, max_depth: Math.log(batch_size, 2), random: Random.new, ranges: [(0.0..1)])
           @batch_size = batch_size
           @max_depth = max_depth
           @random = random
-          @range = range
+          @ranges = ranges
         end
 
         def get_sample(data, _ = 0)
-          ranges = (1..data[0].length).map { |_| @range }
-          DataPoint.new(depth: 0, data: data.sample(@batch_size, random: @random), ranges: ranges)
+          # ranges = (1..data[0].length).map { |_| @range }
+          DataPoint.new(depth: 0, data: data.sample(@batch_size, random: @random), ranges: @ranges)
         end
 
         def split_point(data_point)
           dimension = data_point.data[0].length
           random_dimension = @random.rand(0...dimension)
           split_range_dimension = data_point.ranges[random_dimension]
-          SplitPointD.new(@random.rand(split_range_dimension), random_dimension)
+          SplitPointD.new(split_range_dimension.size / 2, random_dimension)
         end
 
         def decision_function(split_point_d)
