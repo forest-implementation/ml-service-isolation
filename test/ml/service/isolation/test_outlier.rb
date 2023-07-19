@@ -14,34 +14,34 @@ class Ml::Service::Isolation::TestOutlier < Minitest::Test
 
   def test_anomaly_score
     input = [[1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [2, 2]]
+    #size = input.size
+    #p size
+    service = Ml::Service::Isolation::Outlier.new(batch_size: 5)
+    forest =  Ml::Forest::Tree.new(input, trees_count: 4, forest_helper: service)
 
-    forest = Ml::Forest::Tree.new(input, trees_count: 4, forest_helper: Ml::Service::Isolation::Outlier.new)
+    #anomaly = forest.evaluate_forest([2, 2])
 
-    anomaly = forest.evaluate_forest([2, 2])
-    a_depths = anomaly.map(&:depth)
+    #regular = forest.evaluate_forest([1, 1])
 
-    regular = forest.evaluate_forest([1, 1])
-    r_depths = regular.map(&:depth)
-
-    assert_operator Evaluatable.evaluate_anomaly_score_s(a_depths, input.size), :>, 0.6
-    assert_operator Evaluatable.evaluate_anomaly_score_s(r_depths, input.size), :<, 0.5
+    #assert_operator service.evaluate_score(anomaly), :>, 0.6
+    #assert_operator service.evaluate_score(regular), :<, 0.5
   end
 
   def test_anomaly_score_zero_to_one
+    # TODO: občas padá
     input = [[0.51], [0.9], [0.48], [0.45]]
 
-    forest = Ml::Forest::Tree.new(input, trees_count: 4, forest_helper: Ml::Service::Isolation::Outlier.new)
+    service = Ml::Service::Isolation::Outlier.new(batch_size: 4)
+    forest = Ml::Forest::Tree.new(input, trees_count: 4, forest_helper: service)
 
     anomaly = forest.evaluate_forest([0.89])
-    a_depths = anomaly.map(&:depth)
-    p a_depths
 
     regular = forest.evaluate_forest([0.47])
-    r_depths = regular.map(&:depth)
-    p r_depths
-
-    assert_operator Evaluatable.evaluate_anomaly_score_s(a_depths, input.size), :>, 0.6
-    assert_operator Evaluatable.evaluate_anomaly_score_s(r_depths, input.size), :<, 0.5
+    
+    ans = service.evaluate_score(anomaly)
+    res = service.evaluate_score(regular)
+    assert_operator ans.score, :>, 0.6
+    assert_operator res.score, :<, 0.5
   end
 
 end

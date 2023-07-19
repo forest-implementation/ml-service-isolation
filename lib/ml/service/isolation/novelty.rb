@@ -23,15 +23,16 @@ module Ml
         end
 
         def get_sample(data, _ = 0)
-          # ranges = (1..data[0].length).map { |_| @range }
-          DataPoint.new(depth: 0, data: data.sample(@batch_size, random: @random), ranges: @ranges)
+          sample = data.sample(@batch_size, random: @random)
+          sample.size != @batch_size and pp "sample != batch_size"
+          DataPoint.new(depth: 0, data: sample, ranges: @ranges)
         end
 
         def split_point(data_point)
           dimension = data_point.data[0].length
           random_dimension = @random.rand(0...dimension)
           split_range_dimension = data_point.ranges[random_dimension]
-          SplitPointD.new(split_range_dimension.size / 2, random_dimension)
+          SplitPointD.new((split_range_dimension.begin + split_range_dimension.end) / 2.0, random_dimension)
         end
 
         def decision_function(split_point_d)
@@ -43,10 +44,10 @@ module Ml
         end
 
         def split_ranges(ranges, dimension, split_point)
-          new_rangers = ranges.clone
+          new_rangers = ranges.dup
           new_rangers[dimension] = ranges[dimension].min..split_point
 
-          new_rangers2 = ranges.clone
+          new_rangers2 = ranges.dup
           new_rangers2[dimension] = split_point..ranges[dimension].max
 
           [new_rangers, new_rangers2]
