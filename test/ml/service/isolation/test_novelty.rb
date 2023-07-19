@@ -16,6 +16,12 @@ class Ml::Service::Isolation::TestNovelty < Minitest::Test
     (min..max)
   end
 
+  def test_end_condition
+    dp = Ml::Service::Isolation::Outlier::DataPoint.new(depth: 50, data: [[1,2,3]])
+    service = Ml::Service::Isolation::Outlier.new(batch_size: 5, max_depth: 10)
+    assert service.end_condition(dp) == true
+  end
+
   def test_split_point_ranges
     datapoint = Ml::Service::Isolation::Novelty.new(batch_size: 128, random: Random.new(2), ranges: [(0..3000), (0..3000)]).get_sample([[1, 1], [1, 1]])
     assert_equal datapoint.ranges, [0..3000, 0..3000]
@@ -42,6 +48,24 @@ class Ml::Service::Isolation::TestNovelty < Minitest::Test
     groups2 = ns.group(groups[true], split_point2)
     assert_equal groups2[true].ranges, [0..200, 0.0..50]
     assert_equal groups2[false].ranges, [200..3000, 0.0..50]
+  end
+
+  def test_novelty_run_no_trivial
+    #TODO: in-progress
+    input = [[1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [2, 2]]
+    service = Ml::Service::Isolation::Novelty.new(ranges: [(0.0..10.0), (0.0..10.0)])
+    forest = Ml::Forest::Tree.new(input, trees_count: 4, forest_helper: service)
+
+    regular = forest.evaluate_forest([1, 1])
+
+    # TODO: FAILUJE
+    anomaly = forest.evaluate_forest([1.999, 1.999])
+
+    novelty = forest.evaluate_forest([10, 10])
+
+    assert_operator service.evaluate_score(regular).score, :<, 0.5
+    assert_operator service.evaluate_score(anomaly).score, :<, 0.5
+    assert_operator service.evaluate_score(novelty).score, :>, 0.6
   end
 
   def test_novelty_run

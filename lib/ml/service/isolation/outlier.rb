@@ -22,7 +22,10 @@ module Ml
         end
 
         def get_sample(data, _)
-          DataPoint.new(depth: 0, data: data.sample(@batch_size, random: @random))
+          sample = data.sample(@batch_size, random: @random)
+          if @batch_size > sample.size then @batch_size = sample.size end
+          if sample.size != @batch_size then pp "out: samplee != batch_size" + sample.size.to_s + "<" + batch_size.to_s end
+          DataPoint.new(depth: 0, data: sample)
         end
 
         def split_point(data_point)
@@ -48,7 +51,7 @@ module Ml
         end
 
         def end_condition(data_point)
-          data_point.depth == @max_depth || data_point.data.length <= 1
+          data_point.depth >= @max_depth || data_point.data.length <= 1
         end
 
         def evaluate_score(evaluated_data)
