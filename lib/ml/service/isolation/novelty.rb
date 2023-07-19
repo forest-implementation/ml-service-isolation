@@ -30,8 +30,9 @@ module Ml
         def split_point(data_point)
           dimension = data_point.data[0].length
           random_dimension = @random.rand(0...dimension)
-          split_range_dimension = data_point.ranges[random_dimension]
-          SplitPointD.new(split_range_dimension.size / 2.0, random_dimension)
+          range_dimension = data_point.ranges[random_dimension]
+          # TODO: TEST
+          SplitPointD.new((range_dimension.min + range_dimension.max) / 2.0, random_dimension)
         end
 
         def decision_function(split_point_d)
