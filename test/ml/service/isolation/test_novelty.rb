@@ -69,12 +69,12 @@ class Ml::Service::Isolation::TestNovelty < Minitest::Test
     dp = ns.get_sample([[1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [2, 2]])
 
     sd = ns.split_point(dp)
-    # 10 (ranges.size) / 2
-    assert_equal 5, sd.split_point
+    # 11 (ranges.size) / 2
+    assert_equal 5.5, sd.split_point
   end
 
   def test_split_point_decimal
-    ns = Ml::Service::Isolation::Novelty.new(batch_size: 128, random: Random.new(2), ranges: [(0.0..5),(1.0..5)])
+    ns = Ml::Service::Isolation::Novelty.new(batch_size: 128, random: Random.new(2), ranges: [(0.0..10),(2.3..2.7)])
 
     dp = ns.get_sample([[1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [2, 2]])
 

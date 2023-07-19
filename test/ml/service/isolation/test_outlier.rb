@@ -34,11 +34,11 @@ class Ml::Service::Isolation::TestOutlier < Minitest::Test
 
     anomaly = forest.evaluate_forest([0.89])
     a_depths = anomaly.map(&:depth)
-    p a_depths
+    # p a_depths
 
     regular = forest.evaluate_forest([0.47])
     r_depths = regular.map(&:depth)
-    p r_depths
+    # p r_depths
 
     assert_operator Evaluatable.evaluate_anomaly_score_s(a_depths, input.size), :>, 0.6
     assert_operator Evaluatable.evaluate_anomaly_score_s(r_depths, input.size), :<, 0.5
