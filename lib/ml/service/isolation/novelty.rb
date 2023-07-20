@@ -10,8 +10,8 @@ module Ml
         include Evaluatable
 
         SplitPointD = Data.define(:split_point, :dimension)
-        DataPoint = Data.define(:depth, :data, :ranges)
-        Score = Data.define(:score, :novelty?, :depths)
+        DataPoint   = Data.define(:depth, :data, :ranges)
+        Score       = Data.define(:score, :novelty?, :depths)
 
         attr_reader :batch_size, :max_depth, :random, :ranges
 
@@ -43,23 +43,27 @@ module Ml
         end
 
         def split_ranges(ranges, dimension, split_point)
-          new_rangers = ranges.clone
-          new_rangers[dimension] = ranges[dimension].min..split_point
+          min_rangers = ranges.clone
+          min_rangers[dimension] = ranges[dimension].min..split_point
 
-          new_rangers2 = ranges.clone
-          new_rangers2[dimension] = split_point..ranges[dimension].max
+          max_rangers = ranges.clone
+          max_rangers[dimension] = split_point..ranges[dimension].max
 
-          [new_rangers, new_rangers2]
+          [min_rangers, max_rangers]
         end
 
         def group(data_point, split_point_d)
           s = { true => [], false => [] }.merge(data_point.data.group_by(&decision_function(split_point_d)))
 
-          new_ranges, new_ranges2 = split_ranges(data_point.ranges, split_point_d.dimension, split_point_d.split_point)
+          true_ranges, false_ranges = split_ranges(
+            data_point.ranges,
+            split_point_d.dimension,
+            split_point_d.split_point
+          )
 
           {
-            true => DataPoint.new(depth: data_point.depth + 1, data: s[true], ranges: new_ranges),
-            false => DataPoint.new(depth: data_point.depth + 1, data: s[false], ranges: new_ranges2),
+            true => DataPoint.new(depth: data_point.depth + 1, data: s[true], ranges: true_ranges),
+            false => DataPoint.new(depth: data_point.depth + 1, data: s[false], ranges: false_ranges)
           }
         end
 
@@ -72,7 +76,6 @@ module Ml
           score = Evaluatable.evaluate_anomaly_score_s(depths, @batch_size)
           Score.new(score, score >= 0.6, Evaluatable.evaluate_average_e(depths))
         end
-
       end
     end
   end
