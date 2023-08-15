@@ -35,6 +35,17 @@ class Ml::Service::Isolation::TestNovelty < Minitest::Test
     assert_equal second, [(0..100), (50..3000)]
   end
 
+  def test_group_middle_point
+    ranges = [(0..100),]
+    ns = Ml::Service::Isolation::Novelty.new(batch_size: 128, random: Random.new(2), ranges: ranges)
+    sp = Ml::Service::Isolation::Novelty::SplitPointD.new(5, 0)
+    groups = ns.group(Ml::Service::Isolation::Novelty::DataPoint.new(0,[[1],[2],[3],[4],[5],[6],[7],[8],[9]], ranges), sp)
+    pp groups
+    assert_equal [[1,2,3,4]].transpose, groups[true].data
+    assert_equal [[5,6,7,8,9]].transpose, groups[false].data
+    
+  end
+
   def test_group
     ns = Ml::Service::Isolation::Novelty.new(batch_size: 128, random: Random.new(2), ranges: [(0.0..3000), (0.0..100)])
     datapoint = ns.get_sample([[1, 1], [1, 1]])
