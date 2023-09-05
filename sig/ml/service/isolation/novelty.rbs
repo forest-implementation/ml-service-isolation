@@ -1,0 +1,9 @@
+module Ml
+  module Service
+    module Isolation
+      class Novelty
+        def initialize: (batch_size: Integer, max_depth: String, random: Random,ranges: [Range[untyped]] ) -> void
+      end
+    end
+  end
+end
