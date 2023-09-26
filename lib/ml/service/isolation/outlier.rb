@@ -9,7 +9,7 @@ module Ml
       class Outlier
         include Evaluatable
 
-        SplitPointD = Data.define(:split_point, :dimension)
+        SplitPointD = Data.define(:split_point, :ranges, :dimension, :minmax)
         DataPoint = Data.define(:depth, :data)
         Score = Data.define(:score, :outlier?)
 
@@ -23,20 +23,41 @@ module Ml
 
         def get_sample(data, _)
           sample = data.sample(@batch_size, random: @random)
-          if @batch_size > sample.size then @batch_size = sample.size end
-          if sample.size != @batch_size then pp "out: samplee != batch_size" + sample.size.to_s + "<" + batch_size.to_s end
+          @batch_size = sample.size if @batch_size > sample.size
+          pp "out: samplee != batch_size" + sample.size.to_s + "<" + batch_size.to_s if sample.size != @batch_size
           DataPoint.new(depth: 0, data: sample)
+        end
+
+        def split_ranges(ranges, dimension, split_point)
+          new_rangers = ranges.clone
+          new_rangers[dimension] = ranges[dimension].min..split_point
+
+          new_rangers2 = ranges.clone
+          new_rangers2[dimension] = split_point..ranges[dimension].max
+
+          [new_rangers, new_rangers2]
         end
 
         def split_point(data_point)
           dimension = data_point.data[0].length
           random_dimension = rand(0...dimension)
+
           min, max = data_point.data.flat_map { |x| x[random_dimension] }.minmax
-          SplitPointD.new(rand(min.to_f..max.to_f), random_dimension)
+
+          minmax = data_point.data.transpose.map { |xy| xy.minmax }
+          minmax_for_plot = minmax.transpose
+
+          sp = rand(min.to_f..max.to_f)
+          new_ranges = split_ranges(data_point.data.transpose.map { |xy| xy.min..xy.max }, random_dimension, sp)
+          SplitPointD.new(sp, new_ranges, random_dimension, minmax_for_plot)
         end
 
-        def decision_function(split_point_d)
-          ->(x) { x[split_point_d.dimension] < split_point_d.split_point }
+        def decision_function(split_point)
+          lambda { |x|
+            split_point.ranges.find do |range|
+              range[split_point.dimension].include?(x[split_point.dimension])
+            end
+          }
         end
 
         def decision(element, split_point_d)
@@ -44,7 +65,8 @@ module Ml
         end
 
         def group(data_point, split_point_d)
-          s = { true => [], false => [] }.merge(data_point.data.group_by(&decision_function(split_point_d)))
+          s = { split_point_d.ranges[0] => [],
+                split_point_d.ranges[1] => [] }.merge(data_point.data.group_by(&decision_function(split_point_d)))
           s.transform_values do |group|
             DataPoint.new(depth: data_point.depth + 1, data: group)
           end

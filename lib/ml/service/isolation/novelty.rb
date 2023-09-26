@@ -34,8 +34,11 @@ module Ml
           random_dimension = @random.rand(0...dimension)
           range_dimension = data_point.ranges[random_dimension]
           split_point = (range_dimension.min + range_dimension.max) / 2.0
-
+          pp "old ranges"
+          pp data_point.ranges
           new_ranges = split_ranges(data_point.ranges, random_dimension, split_point)
+          pp "new ranges"
+          pp new_ranges
           SplitPointD.new(split_point, random_dimension, new_ranges)
         end
 
