@@ -9,7 +9,7 @@ module Ml
       class Outlier
         include Evaluatable
 
-        SplitPointD = Data.define(:split_point, :ranges, :dimension, :minmax)
+        SplitPointD = Data.define(:split_point, :ranges, :dimension)
         DataPoint = Data.define(:depth, :data)
         Score = Data.define(:score, :outlier?)
 
@@ -29,13 +29,13 @@ module Ml
         end
 
         def split_ranges(ranges, dimension, split_point)
-          new_rangers = ranges.clone
-          new_rangers[dimension] = ranges[dimension].min..split_point
+          new_ranges = ranges.clone
+          new_ranges[dimension] = ranges[dimension].min..split_point
 
-          new_rangers2 = ranges.clone
-          new_rangers2[dimension] = split_point..ranges[dimension].max
+          new_ranges2 = ranges.clone
+          new_ranges2[dimension] = split_point..ranges[dimension].max
 
-          [new_rangers, new_rangers2]
+          [new_ranges, new_ranges2]
         end
 
         def split_point(data_point)
@@ -43,13 +43,9 @@ module Ml
           random_dimension = rand(0...dimension)
 
           min, max = data_point.data.flat_map { |x| x[random_dimension] }.minmax
-
-          minmax = data_point.data.transpose.map { |xy| xy.minmax }
-          minmax_for_plot = minmax.transpose
-
           sp = rand(min.to_f..max.to_f)
           new_ranges = split_ranges(data_point.data.transpose.map { |xy| xy.min..xy.max }, random_dimension, sp)
-          SplitPointD.new(sp, new_ranges, random_dimension, minmax_for_plot)
+          SplitPointD.new(sp, new_ranges, random_dimension)
         end
 
         def decision_function(split_point)
