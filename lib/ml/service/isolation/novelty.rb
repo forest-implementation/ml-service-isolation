@@ -9,7 +9,7 @@ module Ml
       class Novelty
         include Evaluatable
 
-        SplitPointD = Data.define(:split_point, :dimension,:ranges)
+        SplitPointD = Data.define(:split_point, :dimension, :ranges)
         DataPoint = Data.define(:depth, :data, :ranges)
         Score = Data.define(:score, :novelty?, :depths)
 
@@ -24,7 +24,7 @@ module Ml
 
         def get_sample(data, _ = 0)
           sample = data.sample(@batch_size, random: @random)
-          if @batch_size > sample.size then @batch_size = sample.size end
+          @batch_size = sample.size if @batch_size > sample.size
           sample.size != @batch_size and pp "sample != batch_size"
           DataPoint.new(depth: 0, data: sample, ranges: @ranges)
         end
@@ -34,16 +34,16 @@ module Ml
           random_dimension = @random.rand(0...dimension)
           range_dimension = data_point.ranges[random_dimension]
           split_point = (range_dimension.min + range_dimension.max) / 2.0
-          pp "old ranges"
-          pp data_point.ranges
           new_ranges = split_ranges(data_point.ranges, random_dimension, split_point)
-          pp "new ranges"
-          pp new_ranges
           SplitPointD.new(split_point, random_dimension, new_ranges)
         end
 
         def decision_function(split_point)
-          ->(x) { split_point.ranges.reverse.find {|range| range[split_point.dimension].include?(x[split_point.dimension]) } }
+          lambda { |x|
+            split_point.ranges.reverse.find do |range|
+              range[split_point.dimension].include?(x[split_point.dimension])
+            end
+          }
         end
 
         def decision(element, split_point_d)
@@ -67,7 +67,7 @@ module Ml
 
           {
             new_ranges => DataPoint.new(depth: data_point.depth + 1, data: s[new_ranges], ranges: new_ranges),
-            new_ranges2 => DataPoint.new(depth: data_point.depth + 1, data: s[new_ranges2], ranges: new_ranges2),
+            new_ranges2 => DataPoint.new(depth: data_point.depth + 1, data: s[new_ranges2], ranges: new_ranges2)
           }
         end
 
@@ -80,7 +80,6 @@ module Ml
           score = Evaluatable.evaluate_anomaly_score_s(depths, @batch_size)
           Score.new(score, score >= 0.6, Evaluatable.evaluate_average_e(depths))
         end
-
       end
     end
   end
