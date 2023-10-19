@@ -90,10 +90,26 @@ class Ml::Service::Isolation::TestOutlier < Minitest::Test
   end
 
   def test_new_ranges2
-    data = [[1,1,1,1]]
+    data = [[1, 1, 1, 1]]
     dp = Data.define(:data).new(data)
     datapoints = [dp, dp]
 
     assert_equal [[[1, 1]], [[1, 1]]], Ml::Service::Isolation::Outlier.new_ranges(datapoints, 0..0)
+  end
+
+  def test_equi_group_by
+    data = [[1, 0], [1, 1], [2, 1], [1, 2]]
+    sp = 1
+    dimension = 1
+    dp = Data.define(:data).new(data)
+
+    s = { -1 => [[1, 0]], 0 => [[1, 1], [2, 1]], 1 => [[1, 2]] }
+    assert_equal s, Ml::Service::Isolation::Outlier.equi_group_by(dp, sp, dimension)
+  end
+
+  def test_mid_to_l_r
+    input = { -1 => [[1, 0]], 0 => [[1, 1], [2, 1]], 1 => [[1, 2]] }
+    expected = { -1 => [[1, 0], [1, 1], [2, 1]], 1 => [[1, 2], [1, 1], [2, 1]] }
+    assert_equal expected, Ml::Service::Isolation::Outlier.mid_to_l_r(input)
   end
 end

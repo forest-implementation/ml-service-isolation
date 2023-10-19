@@ -40,6 +40,17 @@ module Ml
           datapoints.map { |dp| dimensionial_min_max(dp, dimensions) }
         end
 
+        # marks the datapoint that is same as SP (on the given dimension) as zero
+        def self.equi_group_by(datapoint, split_point, dimension)
+          { -1 => [], 0 => [], 1 => [] }.merge(datapoint.data.group_by { |x| x[dimension] <=> split_point })
+        end
+
+        def self.mid_to_l_r(l_s_r_object)
+          l_s_r_object.map do |key, value|
+            key != 0 ? { key => value + l_s_r_object[0] } : nil
+          end.compact.reduce({}, :merge)
+        end
+
         def split_point(data_point)
           dimension = data_point.data[0].length
           random_dimension = rand(0...dimension)
@@ -47,11 +58,9 @@ module Ml
           min, max = self.class.min_max(data_point, random_dimension)
           sp = rand(min.to_f..max.to_f)
 
-          datapoints = { -1 => [], 0 => [], 1 => [] }.merge(data_point.data.group_by { |x| x[random_dimension] <=> sp })
-
-          datapoints = datapoints.map do |key, value|
-            key != 0 ? { key => value + datapoints[0] } : nil
-          end.compact.reduce({}, :merge).values.map { |dato| DataPoint.new(0, dato) }
+          datapoints = self.class.mid_to_l_r(self.class.equi_group_by(data_point, sp, random_dimension)).values.map do |dato|
+            DataPoint.new(0, dato)
+          end
 
           new_ranges = self.class.new_ranges(datapoints, 0...dimension)
 
@@ -60,14 +69,7 @@ module Ml
 
         def self.decision_function(split_point)
           lambda { |x|
-            # pp split_point
             range = split_point.ranges.transpose[split_point.dimension]
-            # pp "range"
-            # pp range
-            # pp split_point.dimension
-            # pp :r, range[split_point.dimension].max
-            # pp :x, x[split_point.dimension]
-            # pp :sp, split_point.split_point
 
             (range[split_point.dimension].max <= split_point.split_point) == (x[split_point.dimension] <= split_point.split_point) ? range[split_point.dimension] : range[1 - split_point.dimension]
           }
