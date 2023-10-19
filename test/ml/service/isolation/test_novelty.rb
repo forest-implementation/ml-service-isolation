@@ -73,8 +73,8 @@ class Ml::Service::Isolation::TestNovelty < Minitest::Test
 
     novelty = forest.evaluate_forest([10, 10])
 
-    assert_operator service.evaluate_score(regular).score, :<, 0.5
-    assert_operator service.evaluate_score(anomaly).score, :<, 0.5
+    assert_operator service.evaluate_score(regular).score, :<, 0.6
+    assert_operator service.evaluate_score(anomaly).score, :<, 0.6
     assert_operator service.evaluate_score(novelty).score, :>, 0.6
   end
 

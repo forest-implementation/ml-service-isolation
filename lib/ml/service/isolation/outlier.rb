@@ -28,41 +28,59 @@ module Ml
           DataPoint.new(depth: 0, data: sample)
         end
 
-        def split_ranges(ranges, dimension, split_point)
-          new_ranges = ranges.clone
-          new_ranges[dimension] = ranges[dimension].min..split_point
+        def self.min_max(data_point, dimension)
+          data_point.data.transpose[dimension].minmax
+        end
 
-          new_ranges2 = ranges.clone
-          new_ranges2[dimension] = split_point..ranges[dimension].max
+        def self.dimensionial_min_max(data_point, dimensions)
+          dimensions.map { |dim| min_max(data_point, dim) }
+        end
 
-          [new_ranges, new_ranges2]
+        def self.new_ranges(datapoints, dimensions)
+          datapoints.map { |dp| dimensionial_min_max(dp, dimensions) }
         end
 
         def split_point(data_point)
           dimension = data_point.data[0].length
           random_dimension = rand(0...dimension)
 
-          min, max = data_point.data.flat_map { |x| x[random_dimension] }.minmax
+          min, max = self.class.min_max(data_point, random_dimension)
           sp = rand(min.to_f..max.to_f)
-          new_ranges = split_ranges(data_point.data.transpose.map { |xy| xy.min..xy.max }, random_dimension, sp)
+
+          datapoints = { -1 => [], 0 => [], 1 => [] }.merge(data_point.data.group_by { |x| x[random_dimension] <=> sp })
+
+          datapoints = datapoints.map do |key, value|
+            key != 0 ? { key => value + datapoints[0] } : nil
+          end.compact.reduce({}, :merge).values.map { |dato| DataPoint.new(0, dato) }
+
+          new_ranges = self.class.new_ranges(datapoints, 0...dimension)
+
           SplitPointD.new(sp, new_ranges, random_dimension)
         end
 
-        def decision_function(split_point)
+        def self.decision_function(split_point)
           lambda { |x|
-            split_point.ranges.find do |range|
-              range[split_point.dimension].include?(x[split_point.dimension])
-            end
+            # pp split_point
+            range = split_point.ranges.transpose[split_point.dimension]
+            # pp "range"
+            # pp range
+            # pp split_point.dimension
+            # pp :r, range[split_point.dimension].max
+            # pp :x, x[split_point.dimension]
+            # pp :sp, split_point.split_point
+
+            (range[split_point.dimension].max <= split_point.split_point) == (x[split_point.dimension] <= split_point.split_point) ? range[split_point.dimension] : range[1 - split_point.dimension]
           }
         end
 
         def decision(element, split_point_d)
-          decision_function(split_point_d).call(element)
+          self.class.decision_function(split_point_d).call(element)
         end
 
         def group(data_point, split_point_d)
           s = { split_point_d.ranges[0] => [],
-                split_point_d.ranges[1] => [] }.merge(data_point.data.group_by(&decision_function(split_point_d)))
+                split_point_d.ranges[1] => [] }.merge(data_point.data.group_by(&self.class.decision_function(split_point_d)))
+
           s.transform_values do |group|
             DataPoint.new(depth: data_point.depth + 1, data: group)
           end
