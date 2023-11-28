@@ -58,7 +58,8 @@ module Ml
           min, max = self.class.min_max(data_point, random_dimension)
           sp = rand(min.to_f..max.to_f)
 
-          datapoints = self.class.mid_to_l_r(self.class.equi_group_by(data_point, sp, random_dimension)).values.map do |dato|
+          datapoints = self.class.mid_to_l_r(self.class.equi_group_by(data_point, sp,
+                                                                      random_dimension)).values.map do |dato|
             DataPoint.new(0, dato)
           end
 
@@ -71,7 +72,11 @@ module Ml
           lambda { |x|
             range = split_point.ranges.transpose[split_point.dimension]
 
-            (range[split_point.dimension].max <= split_point.split_point) == (x[split_point.dimension] <= split_point.split_point) ? range[split_point.dimension] : range[1 - split_point.dimension]
+            if (range[split_point.dimension].max <= split_point.split_point) == (x[split_point.dimension] <= split_point.split_point)
+              range[split_point.dimension]
+            else
+              range[1 - split_point.dimension]
+            end
           }
         end
 
