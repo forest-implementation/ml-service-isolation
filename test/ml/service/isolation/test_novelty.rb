@@ -39,22 +39,23 @@ class Ml::Service::Isolation::TestNovelty < Minitest::Test
     ranges = [(0.0..100),]
     ns = Ml::Service::Isolation::Novelty.new(batch_size: 128, random: Random.new(2), ranges: ranges)
 
-    sp = Ml::Service::Isolation::Novelty::SplitPointD.new(5, 0, ns.split_ranges(ranges, 0, 5.0))
-    groups = ns.group(Ml::Service::Isolation::Novelty::DataPoint.new(0,[[1],[2],[3],[4],[5],[6],[7],[8],[9]], ranges), sp)
+    sp = Ml::Service::Isolation::Novelty::SplitPointD.new(5, 0, ns.split_ranges(ranges, 0, 5.0), ranges)
+    groups = ns.group(Ml::Service::Isolation::Novelty::DataPoint.new(0,[[1],[2],[3],[4],[5],[6],[7],[8],[9]], ranges, ranges), sp)
     assert_equal [[1,2,3,4]].transpose, groups[[0.0..5.0]].data
     assert_equal [[5,6,7,8,9]].transpose, groups[[5.0..100]].data
   end
 
   def test_group
-    ns = Ml::Service::Isolation::Novelty.new(batch_size: 128, random: Random.new(2), ranges: [(0.0..3000), (0.0..100)])
+    old_ranges = [(0.0..3000), (0.0..100)]
+    ns = Ml::Service::Isolation::Novelty.new(batch_size: 128, random: Random.new(2), ranges: old_ranges)
     datapoint = ns.get_sample([[1, 1], [1, 1]])
-    split_point = Ml::Service::Isolation::Novelty::SplitPointD.new(50, 1, [[0.0..3000, 0.0..50],[0.0..3000, 50.0..100]])
+    split_point = Ml::Service::Isolation::Novelty::SplitPointD.new(50, 1, [[0.0..3000, 0.0..50],[0.0..3000, 50.0..100]], old_ranges)
     groups = ns.group(datapoint, split_point)
 
     assert_equal groups[[0.0..3000, 0.0..50]].ranges, [0.0..3000, 0.0..50]
     assert_equal groups[[0.0..3000, 50.0..100]].ranges, [0.0..3000, 50.0..100]
 
-    split_point2 = Ml::Service::Isolation::Novelty::SplitPointD.new(200, 0, [ [0..200, 0.0..50], [200..3000, 0.0..50] ])
+    split_point2 = Ml::Service::Isolation::Novelty::SplitPointD.new(200, 0, [ [0..200, 0.0..50], [200..3000, 0.0..50] ], old_ranges)
     groups2 = ns.group(datapoint, split_point2)
     assert_equal groups2[[0..200, 0.0..50]].ranges, [0..200, 0.0..50]
     assert_equal groups2[[200..3000, 0.0..50]].ranges, [200..3000, 0.0..50]

@@ -9,8 +9,8 @@ module Ml
       class Novelty
         include Evaluatable
 
-        SplitPointD = Data.define(:split_point, :dimension, :ranges)
-        DataPoint = Data.define(:depth, :data, :ranges)
+        SplitPointD = Data.define(:split_point, :dimension, :ranges, :old_range)
+        DataPoint = Data.define(:depth, :data, :ranges, :old_range)
         Score = Data.define(:score, :novelty?, :depths)
 
         attr_reader :batch_size, :max_depth, :random, :ranges
@@ -26,7 +26,7 @@ module Ml
           sample = data.sample(@batch_size, random: @random)
           @batch_size = sample.size if @batch_size > sample.size
           sample.size != @batch_size and pp "sample != batch_size"
-          DataPoint.new(depth: 0, data: sample, ranges: @ranges)
+          DataPoint.new(depth: 0, data: sample, ranges: @ranges, old_range: @ranges)
         end
 
         def split_point(data_point)
@@ -35,14 +35,16 @@ module Ml
           range_dimension = data_point.ranges[random_dimension]
           split_point = (range_dimension.min + range_dimension.max) / 2.0
           new_ranges = split_ranges(data_point.ranges, random_dimension, split_point)
-          SplitPointD.new(split_point, random_dimension, new_ranges)
+          SplitPointD.new(split_point, random_dimension, new_ranges, data_point.ranges)
         end
 
         def decision_function(split_point)
           lambda { |x|
-            split_point.ranges.reverse.find do |range|
+            s = split_point.ranges.reverse.find do |range|
               range[split_point.dimension].include?(x[split_point.dimension])
             end
+            warn "no range found" if s.nil?
+            return s
           }
         end
 
@@ -66,8 +68,10 @@ module Ml
           s = { new_ranges => [], new_ranges2 => [] }.merge(data_point.data.group_by(&decision_function(split_point_d)))
 
           {
-            new_ranges => DataPoint.new(depth: data_point.depth + 1, data: s[new_ranges], ranges: new_ranges),
-            new_ranges2 => DataPoint.new(depth: data_point.depth + 1, data: s[new_ranges2], ranges: new_ranges2)
+            new_ranges => DataPoint.new(depth: data_point.depth + 1, data: s[new_ranges], ranges: new_ranges,
+                                        old_range: split_point_d.old_range),
+            new_ranges2 => DataPoint.new(depth: data_point.depth + 1, data: s[new_ranges2], ranges: new_ranges2,
+                                         old_range: split_point_d.old_range)
           }
         end
 

@@ -8,10 +8,11 @@ module Evaluatable
   end
 
   def self.evaluate_path_length_c(batch_size)
-    return 1 if batch_size == 2
-    return 0 if batch_size < 2
+    return 2 if batch_size == 2
+    return 0 if batch_size == 0
+    return 1 if batch_size == 1
 
-    2 * harmonic_number(batch_size - 1) - 2 * (batch_size - 1) / batch_size
+    (2 * harmonic_number(batch_size - 1) - 2 * (batch_size - 1) / batch_size) + 1
   end
 
   # E(h(x)) is the average of h(x) from a collection of iTrees
