@@ -9,11 +9,12 @@ module Ml
       class Novelty
         include Evaluatable
 
-        SplitPointD = Data.define(:split_point, :dimension, :ranges, :old_range)
+        SplitPointD = Data.define(:split_point, :dimension, :ranges, :old_range,:data)
         DataPoint = Data.define(:depth, :data, :ranges, :old_range)
         Score = Data.define(:score, :novelty?, :depths)
 
         attr_reader :batch_size, :max_depth, :random, :ranges
+       
 
         def initialize(batch_size: 128, max_depth: Math.log(batch_size, 2), random: Random.new, ranges: [(0.0..1)])
           @batch_size = batch_size
@@ -35,7 +36,7 @@ module Ml
           range_dimension = data_point.ranges[random_dimension]
           split_point = (range_dimension.min + range_dimension.max) / 2.0
           new_ranges = split_ranges(data_point.ranges, random_dimension, split_point)
-          SplitPointD.new(split_point, random_dimension, new_ranges, data_point.ranges)
+          SplitPointD.new(split_point, random_dimension, new_ranges, data_point.ranges, data_point.data)
         end
 
         def decision_function(split_point)
@@ -66,7 +67,7 @@ module Ml
           # new_ranges, new_ranges2 = split_ranges(data_point.ranges, split_point_d.dimension, split_point_d.split_point)
           new_ranges, new_ranges2 = split_point_d.ranges
           s = { new_ranges => [], new_ranges2 => [] }.merge(data_point.data.group_by(&decision_function(split_point_d)))
-
+pp "s>",s
           {
             new_ranges => DataPoint.new(depth: data_point.depth + 1, data: s[new_ranges], ranges: new_ranges,
                                         old_range: split_point_d.old_range),
@@ -76,6 +77,8 @@ module Ml
         end
 
         def end_condition(data_point)
+          pp "end"
+          pp data_point.data
           data_point.depth >= @max_depth || data_point.data.length <= 1
         end
 
