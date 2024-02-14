@@ -24,7 +24,7 @@ module Ml
         def get_sample(data, _)
           sample = data.sample(@batch_size, random: @random)
           @batch_size = sample.size if @batch_size > sample.size
-          pp "out: samplee != batch_size" + sample.size.to_s + "<" + batch_size.to_s if sample.size != @batch_size
+          warn "out: samplee != batch_size#{sample.size}<#{batch_size}" if sample.size != @batch_size
           DataPoint.new(depth: 0, data: sample)
         end
 

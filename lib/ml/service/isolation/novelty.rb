@@ -9,7 +9,7 @@ module Ml
       class Novelty
         include Evaluatable
 
-        SplitPointD = Data.define(:split_point, :dimension, :ranges, :old_range)
+        SplitPointD = Data.define(:split_point, :dimension, :ranges, :old_range,:data)
         DataPoint = Data.define(:depth, :data, :ranges, :old_range)
         Score = Data.define(:score, :novelty?, :depths)
 
@@ -35,7 +35,7 @@ module Ml
           range_dimension = data_point.ranges[random_dimension]
           split_point = (range_dimension.min + range_dimension.max) / 2.0
           new_ranges = split_ranges(data_point.ranges, random_dimension, split_point)
-          SplitPointD.new(split_point, random_dimension, new_ranges, data_point.ranges)
+          SplitPointD.new(split_point, random_dimension, new_ranges, data_point.ranges, data_point.data)
         end
 
         def decision_function(split_point)
@@ -44,7 +44,7 @@ module Ml
               range[split_point.dimension].include?(x[split_point.dimension])
             end
             warn "no range found" if s.nil?
-            return s
+            s
           }
         end
 
@@ -66,7 +66,6 @@ module Ml
           # new_ranges, new_ranges2 = split_ranges(data_point.ranges, split_point_d.dimension, split_point_d.split_point)
           new_ranges, new_ranges2 = split_point_d.ranges
           s = { new_ranges => [], new_ranges2 => [] }.merge(data_point.data.group_by(&decision_function(split_point_d)))
-
           {
             new_ranges => DataPoint.new(depth: data_point.depth + 1, data: s[new_ranges], ranges: new_ranges,
                                         old_range: split_point_d.old_range),
@@ -76,7 +75,7 @@ module Ml
         end
 
         def end_condition(data_point)
-          data_point.depth >= @max_depth || data_point.data.length <= 1
+          data_point.depth >= @max_depth || data_point.data.uniq.length <= 1
         end
 
         def evaluate_score(evaluated_data)
