@@ -4,10 +4,8 @@ require_relative "novelty"
 
 module Ml::Service::Isolation
   class Noutlier < Novelty
-    def self.min_max(data, max_dimension = 1)
-      return [Float::INFINITY..-Float::INFINITY] * max_dimension if data.empty?
-      pp data
-      dimensions = data[0].length
+    def self.min_max(data)
+      dimensions = data[0].size
       (0...dimensions).map do |dim|
         min, max = data.transpose[dim].minmax
         min..max
@@ -27,31 +25,29 @@ module Ml::Service::Isolation
     def decision_function(split_point)
       lambda { |x|
         ranges = split_point.ranges
-        pp ranges
+
         range = ranges.transpose[split_point.dimension]
-        if (range[split_point.dimension].end < split_point.split_point) == (x[split_point.dimension] < split_point.split_point)
-          res = ranges[split_point.dimension]
-        else
-          res = ranges[1 - split_point.dimension]
-        end
-        return res
+
+        branch = (range[0].end < split_point.split_point) == (x[split_point.dimension] <= split_point.split_point)
+        ranges[branch ? 0 : 1]
       }
     end
 
-    def split_ranges(data, split_point, dimension, max_dimension)
-      g = { true => [], false => [] }.merge(data.group_by { |x| x[dimension] <= split_point })
-      pp split_point
-      pp g.values
-      g.values.map { |v| self.class.min_max(v, max_dimension) }
+    def pregroup(datapoint, split_point, dimension)
+      g = { true => [], false => [] }.merge(datapoint.group_by { |x| x[dimension] < split_point })
+
+      g.values.map { |v| self.class.min_max(v) }
     end
 
     def split_point(data_point)
       dimension = data_point.data[0].length
-      random_dimension = @random.rand(0...dimension)
+      # find dimension until there are distinct data in it
+      random_dimension = (0...dimension).to_a.shuffle(random: @random).find {
+         |dim| data_point.data.uniq { |x| x[dim] } .size > 1
+      }
       range_dimension = data_point.ranges[random_dimension]
-      pp range_dimension
       split_point = @random.rand(range_dimension)
-      ranges = split_ranges(data_point.data, split_point, random_dimension, dimension)
+      ranges = pregroup(data_point.data, split_point, random_dimension)
       SplitPointD.new(split_point, random_dimension, ranges, data_point.ranges, data_point.data)
     end
   end
