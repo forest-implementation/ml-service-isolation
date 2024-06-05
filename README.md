@@ -1,39 +1,43 @@
-# Ml::Service::Novelty
+# Ml::Service::Isolation
 
-TODO: Delete this and the text below, and describe your gem
-
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/ml/service/novelty`. To experiment with that code, run `bin/console` for an interactive prompt.
+Service for isolation operations on forest (outlier isolation, novelty isolation).
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+First get ruby (e.g. [rbenv](https://github.com/rbenv/rbenv)) and [bundler](https://bundler.io/docs.html)
 
-Install the gem and add to the application's Gemfile by executing:
+(Optional) Create your gem
 
-    $ bundle add UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
+    $ bundle gem mygem
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+Add dependency for the forest
 
-    $ gem install UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
+    $ bundle add ml-forest --github=forest-implementation/ml-forest
+
+Add dependency for this service
+
+    $ bundle add ml-service-isolation --github=forest-implementation/ml-service-isolation
+
 
 ## Usage
 
-### Novelty
+#### Novelty
 
-For example of usage please refer to example project.
+In your file, import forest and the desired service
 
-Simple usage on ml-forest could look like this
-
-1. install ml-forest alongside with this service
-
-Gemfile
 ```Ruby
-gem "ml-forest"
-gem "ml-service-isolation"
+require "ml/forest"
+require "ml/service/isolation/novelty"
+
+forest = Ml::Forest::Tree.new([5, 8, 3, 4, 2, 7].map{|x| [x]} , trees_count: 1, forest_helper: Ml::Service::Isolation::Novelty.new(ranges: [0..10]))
+
+pp forest.evaluate_forest([6])
+pp forest.evaluate_forest([6.24])
 ```
 
-Usage
-```ruby
+or with anomaly scores
+
+```Ruby
 # learning input
 input = [[5], [8], [3], [4], [2], [7]]
 forest = Ml::Forest::Tree.new(input, trees_count: 5, forest_helper: Ml::Service::Isolation::Novelty.new)
@@ -48,11 +52,26 @@ Evaluatable.evaluate_anomaly_score_s(depths_second, input.size) # 0.81 (>0.5 => 
 
 ```
 
-## Development
+#### Outlier
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+```Ruby
+require_relative "ruby/version"
+require "ml/forest"
+require "ml/service/isolation/outlier"
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+forest = Ml::Forest::Tree.new([5, 8, 3, 4, 2, 7].map{|x| [x]} , trees_count: 1, forest_helper: Ml::Service::Isolation::Outlier.new)
+
+pp forest.evaluate_forest([6])
+pp forest.evaluate_forest([1])
+pp forest.fit_predict([55])
+```
+
+## Test
+
+    $ bundle exec rake test
+
+Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/ml-forest.
+
 
 ## Contributing
 
