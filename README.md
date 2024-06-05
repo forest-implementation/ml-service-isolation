@@ -70,8 +70,6 @@ pp forest.fit_predict([55])
 
     $ bundle exec rake test
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/ml-forest.
-
 
 ## Contributing
 
